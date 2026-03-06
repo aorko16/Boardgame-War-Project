@@ -1,0 +1,42 @@
+name: Build and Deploy WAR to Nexus-3333
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17 + Maven + Nexus credentials
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+          server-id: nexus
+          server-username: NEXUS_USERNAME
+          server-password: NEXUS_PASSWORD
+
+      - name: Build WAR file
+        run: mvn --batch-mode clean package
+
+      - name: Deploy WAR to Nexus
+        run: mvn --batch-mode deploy
+
+      - name: Upload WAR artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-app-war
+          path: target/*.war
+          retention-days: 7
+
