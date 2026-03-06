@@ -5,7 +5,7 @@ on:
 
 jobs:
   pre_build:
-    name: pre-compile-project
+    name: Pre-compile Project
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,16 +26,14 @@ jobs:
     needs: pre_build
     steps:
       - uses: actions/checkout@v4
-      - name: Set up JDK 17
+      - name: Set up JDK 17 & configure Nexus
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-          server-id: nexus
+          server-id: nexus                # must match <id> in pom.xml
           server-username: ${{ secrets.NEXUS_USERNAME }}
           server-password: ${{ secrets.NEXUS_PASSWORD }}
       - name: Deploy artifact
         run: mvn deploy
-
-
