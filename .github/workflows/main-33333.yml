@@ -26,14 +26,23 @@ jobs:
     needs: pre_build
     steps:
       - uses: actions/checkout@v4
-      - name: Set up JDK 17 & configure Nexus
+      - name: Set up JDK 17 & Configure Nexus
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-          server-id: nexus                # must match <id> in pom.xml
+          server-id: nexus                   # must match <id> in pom.xml
           server-username: ${{ secrets.NEXUS_USERNAME }}
           server-password: ${{ secrets.NEXUS_PASSWORD }}
       - name: Deploy artifact
-        run: mvn deploy
+        run: |
+          # Determine if version is a SNAPSHOT or RELEASE
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          if [[ "$VERSION" == *"-SNAPSHOT" ]]; then
+            echo "Deploying SNAPSHOT to Nexus..."
+            mvn deploy -DaltDeploymentRepository=nexus::default::http://13.203.65.11:8081/repository/maven-snapshots/
+          else
+            echo "Deploying RELEASE to Nexus..."
+            mvn deploy -DaltDeploymentRepository=nexus::default::http://13.203.65.11:8081/repository/maven-releases/
+          fi
