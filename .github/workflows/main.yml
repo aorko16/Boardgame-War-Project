@@ -1,4 +1,4 @@
-name: Build and Deploy WAR to Nexus
+name: Build and Deploy WAR to Nexus-11
 
 on:
   push:
