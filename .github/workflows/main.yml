@@ -1,11 +1,11 @@
-name: Artifact Jar Storing Nexus Repository-1
+name: Artifact Jar Storing Nexus Repository
 on:
   push:
     branches: [ "main" ]
 
 jobs:
   pre_build:
-    name: pre-compile-project
+    name: Pre-compile Project
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,4 +36,14 @@ jobs:
           server-username: ${{ secrets.NEXUS_USERNAME }}
           server-password: ${{ secrets.NEXUS_PASSWORD }}
       - name: Deploy artifact
-        run: mvn deploy
+        run: |
+          # Get project version
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          
+          if [[ "$VERSION" == *"-SNAPSHOT" ]]; then
+            echo "Deploying SNAPSHOT to Nexus..."
+            mvn deploy -DaltDeploymentRepository=nexus::default::http://13.203.65.11:8081/repository/maven-snapshots/
+          else
+            echo "Deploying RELEASE to Nexus..."
+            mvn deploy -DaltDeploymentRepository=nexus::default::http://13.203.65.11:8081/repository/maven-releases/
+          fi
