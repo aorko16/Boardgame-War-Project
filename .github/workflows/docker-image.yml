@@ -1,4 +1,4 @@
-name: Docker Image CI-v111
+name: Docker Image CI-vvv
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
         java-version: '17'
         cache: maven
 
-    - name: Build with Maven
+    - name: Build jar with Maven
       run: mvn -B package --file pom.xml
 
     - name: Login to DockerHub
@@ -35,5 +35,6 @@ jobs:
     - name: Build and Push Docker Image
       uses: docker/build-push-action@v6
       with:
+        context: .
         push: true
-        tags: aorko16/boardgame11:${{ github.sha }}
+        tags: aorko16/boardgame11:latest
